@@ -29,18 +29,16 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class R3lishStats {
-  final int founders;
-  final int explorers;
-  final int total;
+class MiddlStats {
+  final int totalUsers;
+  final int payingUsers;
 
-  R3lishStats(this.founders, this.explorers, this.total);
+  MiddlStats(this.totalUsers, this.payingUsers);
 
-  factory R3lishStats.fromJson(Map<String, dynamic> json) {
-    return R3lishStats(
-      json['founders'] as int,
-      json['explorers'] as int,
-      json['total'] as int,
+  factory MiddlStats.fromJson(Map<String, dynamic> json) {
+    return MiddlStats(
+      json['total_users'] as int,
+      json['paying_users'] as int,
     );
   }
 }
@@ -54,7 +52,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   UserResp _userInfo = UserResp(0, 0);
-  R3lishStats _r3lishStats = R3lishStats(0, 0, 0);
+  MiddlStats _middlStats = MiddlStats(0, 0);
   bool _loading = false;
 
   @override
@@ -66,7 +64,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<void> fetchAllStats() async {
     setState(() => _loading = true);
     try {
-      await Future.wait([fetchUserInfo(), fetchR3lishStats()]);
+      await Future.wait([fetchUserInfo(), fetchMiddlStats()]);
     } finally {
       setState(() => _loading = false);
     }
@@ -84,14 +82,15 @@ class _MyHomePageState extends State<MyHomePage> {
     } catch (_) {}
   }
 
-  Future<void> fetchR3lishStats() async {
+  Future<void> fetchMiddlStats() async {
     try {
       final resp = await http.get(
-        Uri.parse('https://api.r3lish.com/api/stats'),
+        Uri.parse('https://app.getmiddl.com/api/v1/obs/stats'),
+        headers: {'X-Obs-Secret': 'cee1d7fabe7911a67eb4ca26c28f92fc4eae6a874135e18c'},
       );
       if (resp.statusCode == 200) {
         final body = jsonDecode(resp.body) as Map<String, dynamic>;
-        setState(() => _r3lishStats = R3lishStats.fromJson(body));
+        setState(() => _middlStats = MiddlStats.fromJson(body));
       }
     } catch (_) {}
   }
@@ -168,34 +167,25 @@ class _MyHomePageState extends State<MyHomePage> {
                 const SizedBox(height: 32),
                 _Divider(),
                 const SizedBox(height: 32),
-                _SectionLabel(label: 'r3lish'),
+                _SectionLabel(label: 'Middl'),
                 const SizedBox(height: 12),
                 Row(
                   children: [
                     Expanded(
                       child: _StatCard(
-                        label: 'Total',
-                        value: _r3lishStats.total,
-                        icon: Icons.bar_chart_rounded,
+                        label: 'Total Users',
+                        value: _middlStats.totalUsers,
+                        icon: Icons.people_rounded,
                         accentColor: const Color(0xFF00C896),
                       ),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
                       child: _StatCard(
-                        label: 'Founders',
-                        value: _r3lishStats.founders,
-                        icon: Icons.rocket_launch_rounded,
+                        label: 'Paying Users',
+                        value: _middlStats.payingUsers,
+                        icon: Icons.monetization_on_rounded,
                         accentColor: const Color(0xFFFFB347),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: _StatCard(
-                        label: 'Explorers',
-                        value: _r3lishStats.explorers,
-                        icon: Icons.explore_rounded,
-                        accentColor: const Color(0xFF7C9EFF),
                       ),
                     ),
                   ],
